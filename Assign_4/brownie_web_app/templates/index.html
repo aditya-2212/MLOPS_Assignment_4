@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>News Articles</title>
+  </head>
+  <body>
+    <h1>News Articles for {{ filter_date }}</h1>
+    <p>
+      Change date by adding <code>?date_str=YYYY-MM-DD</code> to the URL, e.g.
+      <code>?date_str=2025-03-14</code>
+    </p>
+    <hr />
+    {% for (title, publication_timestamp, weblink, image_path, summary) in
+    articles %}
+    <div style="margin-bottom: 20px">
+      <h2>
+        <a href="{{ weblink }}" target="_blank"> {{ title }} </a>
+      </h2>
+      {% if image_path %}
+      <a href="{{ weblink }}" target="_blank">
+        <img
+          src="{{ image_path }}"
+          alt="Article Image"
+          style="max-width: 300px"
+        />
+      </a>
+      {% endif %}
+      <p><em>Published at: {{ publication_timestamp }}</em></p>
+      <p>{{ summary }}</p>
+    </div>
+    <hr />
+    {% endfor %}
+  </body>
+</html>

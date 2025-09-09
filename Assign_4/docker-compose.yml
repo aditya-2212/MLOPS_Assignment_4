@@ -1,0 +1,58 @@
+services:
+  db:
+    build:
+      context: ./task1_database
+      dockerfile: Dockerfile
+    container_name: db_service
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rss_reader:
+    build:
+      context: ./task2_rss_reader
+      dockerfile: Dockerfile
+    container_name: rss_reader_service
+    depends_on:
+      db:
+        condition: service_healthy  # Ensures DB is fully up
+    environment:
+      - RSS_FEED_URL=${RSS_FEED_URL}
+      - POLL_INTERVAL=${POLL_INTERVAL}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+    env_file:
+      - .env  # Ensures environment variables are properly loaded
+
+  web_app:
+    build:
+      context: ./brownie_web_app
+      dockerfile: Dockerfile
+    container_name: web_app_service
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+    ports:
+      - "5000:5000"
+
+volumes:
+  db_data:
